@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IOSoccer Commands</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>IOSoccer Commands</h1>
+    <button id="theme-toggle">🌙</button>
+  </header>
+  <nav>
+    <button class="tab-btn" data-tab="iosoccer">IOSoccer Commands</button>
+    <button class="tab-btn" data-tab="hidden">Hidden CVAR's</button>
+    <button class="tab-btn" data-tab="sourcemod">SourceMod Commands</button>
+    <button class="tab-btn" data-tab="favourites">Favourites ⭐</button>
+  </nav>
+  <section id="controls">
+    <input type="text" id="search" placeholder="Search commands...">
+    <label id="cheat-toggle-label" style="display:none;">
+      <input type="checkbox" id="cheat-toggle" checked>
+      Show [CHEATS REQUIRED]
+    </label>
+  </section>
+  <main>
+    <div id="tab-content"></div>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
