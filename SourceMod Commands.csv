@@ -1,4 +1,4 @@
-cmd,default value / args,description
+cmd,default value,description
 sm_play,<#userid|name> <filename>,
 sm_reserve_kicktype,0,How to select a client to kick (if appropriate)
 sm_reserve_maxadmins,1,Maximum amount of admins to let in the server with reserve type 2

@@ -6,22 +6,21 @@ const CSV_FILES = {
 
 const TABLE_CONFIG = {
   iosoccer: {
-    columns: ["cmd", "default value/ args", "description"],
-    headers: ["Command", "Args", "Description"]
+    columns: ["cmd", "default value", "description"],
+    headers: ["Command / ConVar", "Default Value", "Description"]
   },
   sourcemod: {
-    columns: ["cmd", "default value / args", "description"],
-    headers: ["Command", "Args", "Description"]
+    columns: ["cmd", "default value", "description"],
+    headers: ["Command / ConVar", "Default Value / Args", "Description"]
   },
   hidden: {
     columns: ["cmd", "default value", "description"],
-    headers: ["Command", "Args", "Description"]
+    headers: ["Command / ConVar", "Default Value", "Description"]
   }
 };
 
 let tablesData = { iosoccer: [], sourcemod: [], hidden: [] };
 let favourites = [];
-let showCheats = true;
 let currentTab = "iosoccer";
 let searchQuery = "";
 
@@ -29,11 +28,11 @@ const tabInfo = document.getElementById('tab-info');
 
 const infoTexts = {
   iosoccer:
-    'A full dump of the IOSoccer Commands and ConVars. Args just shows the default value, use the description for "help" with commands. Find a spreadsheet version <a href="https://docs.google.com/spreadsheets/d/1l8wSx-Njumaaf2cANuWZriGbsqdBqXzK/edit?usp=sharing&ouid=102286865328456157772&rtpof=true&sd=true" target="_blank" rel="noopener noreferrer">here</a>',
+    'Most of these are ConVars - settings that can be a float32 (any number), a string (text), or a boolean (1 true, 0 false). "Real" Commands (cmd) execute a function, though not all require args (sv_endmatch does not, kick [player] does).',
   sourcemod:
-    'All Commands and ConVars included by default with <a href="https://www.sourcemod.net/downloads.php" target="_blank" rel="noopener noreferrer">SourceMod</a>. Official Servers disable some of these.',
+    'These are for the plugins that come with <a href="https://www.sourcemod.net/downloads.php" target="_blank" rel="noopener noreferrer">SourceMod</a> by default',
   hidden:
-    `A full dump of the hidden IOSoccer Commands and ConVars. These would normally be disabled but you can use <a href="https://drive.google.com/file/d/1ZnYsAns0tXt0IGGBbW1mVnl7TPSTz_3g/view" target="_blank" rel="noopener noreferrer">this plugin</a> with <a href="https://www.sourcemod.net/downloads.php" target="_blank" rel="noopener noreferrer">SourceMod</a> to enable them.`,
+    `These are disabled in the normal game by default. You can use <a href="https://drive.google.com/file/d/1ZnYsAns0tXt0IGGBbW1mVnl7TPSTz_3g/view" target="_blank" rel="noopener noreferrer">this SourceMod plugin</a> to enable them on a server.`,
   favourites: ""
 };
 
@@ -159,10 +158,6 @@ function renderAll() {
   const iosoccerSection = document.getElementById("tab-iosoccer");
   let iosoccerData = tablesData.iosoccer;
 
-  if (!showCheats) {
-    iosoccerData = iosoccerData.filter(row => !/\[CHEATS REQUIRED\]|sv_cheats/i.test(row.description));
-  }
-
   iosoccerData = filterData(iosoccerData, searchQuery);
   iosoccerSection.innerHTML = "";
   iosoccerSection.appendChild(renderTable("iosoccer", iosoccerData));
@@ -186,8 +181,8 @@ favSection.appendChild(renderFavouritesTable(favs));
 }
 
 function renderFavouritesTable(favs) {
-  const columns = ["tab", "cmd", "args", "description"];
-  const headers = ["Tab", "Command", "Args", "Description"];
+  const columns = ["tab", "cmd", "default value", "description"];
+  const headers = ["Tab", "Command", "Default Value / Args", "Description"];
 
   const wrapper = document.createElement("div");
   wrapper.className = "table-wrapper";
@@ -239,14 +234,14 @@ function renderFavouritesTable(favs) {
       tdCmd.appendChild(document.createTextNode(" " + (fav.row.cmd || "")));
       tr.appendChild(tdCmd);
 
-      const argsKey =
-        fav.tab === "iosoccer" ? "default value/ args" :
-        fav.tab === "sourcemod" ? "default value / args" :
+      const valueKey =
+        fav.tab === "iosoccer" ? "default value" :
+        fav.tab === "sourcemod" ? "default value" :
         fav.tab === "hidden" ? "default value" : "";
 
-      const tdArgs = document.createElement("td");
-      tdArgs.textContent = fav.row[argsKey] || "";
-      tr.appendChild(tdArgs);
+      const tdValue = document.createElement("td");
+      tdValue.textContent = fav.row[valueKey] || "";
+      tr.appendChild(tdValue);
 
       const tdDesc = document.createElement("td");
       tdDesc.textContent = fav.row.description || "";
@@ -301,8 +296,8 @@ function filterData(data, query) {
   return data.filter(row =>
     (row.cmd && row.cmd.toLowerCase().includes(q)) ||
     (row.description && row.description.toLowerCase().includes(q)) ||
-    (row["default value/ args"] && row["default value/ args"].toLowerCase().includes(q)) ||
-    (row["default value / args"] && row["default value / args"].toLowerCase().includes(q)) ||
+    (row["default value"] && row["default value"].toLowerCase().includes(q)) ||
+    (row["default value"] && row["default value"].toLowerCase().includes(q)) ||
     (row["default value"] && row["default value"].toLowerCase().includes(q))
   );
 }
@@ -327,17 +322,10 @@ function switchTab(tab) {
     sec.classList.toggle("active", sec.id === "tab-" + tab);
   });
 
-  document.getElementById("cheatToggle").style.display = (tab === "iosoccer") ? "" : "none";
   document.getElementById("searchInput").style.display = (tab === "favourites") ? "none" : "";
 
   renderAll();
   updateTabInfo(tab);
-}
-
-function updateCheatToggle() {
-  const btn = document.getElementById("cheatToggle");
-  btn.textContent = showCheats ? "HIDE CHEATS" : "SHOW CHEATS";
-  btn.classList.toggle("active", showCheats);
 }
 
 function setDarkMode(enabled) {
@@ -372,13 +360,6 @@ function setupEventListeners() {
     renderAll();
   });
 
-  document.getElementById("cheatToggle").addEventListener("click", () => {
-    showCheats = !showCheats;
-    saveToLS("showCheats", showCheats);
-    updateCheatToggle();
-    renderAll();
-  });
-
   document.getElementById("darkModeToggle").addEventListener("click", () => {
     const enabled = !document.body.classList.contains("dark");
     setDarkMode(enabled);
@@ -387,9 +368,7 @@ function setupEventListeners() {
 
 async function init() {
   favourites = loadFromLS("favourites", []);
-  showCheats = loadFromLS("showCheats", true);
   setDarkMode(loadFromLS("darkMode", window.matchMedia('(prefers-color-scheme: dark)').matches));
-  updateCheatToggle();
   await loadCSVs();
   setupEventListeners();
   switchTab(currentTab);

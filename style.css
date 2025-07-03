@@ -16,8 +16,6 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  margin: 0;
-  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -180,25 +178,6 @@ h1 {
   outline: none;
 }
 
-.cheat-toggle {
-  padding: 0.9em 0.9em;
-  border-radius: var(--radius);
-  border: none;
-  background: var(--accent);
-  color: #fff;
-  font-weight: 500;
-  cursor: pointer;
-  font-size: 1em;
-  transition: background var(--transition), color var(--transition);
-  margin-right: 7px;
-}
-
-.cheat-toggle.active {
-  background: #fff;
-  color: var(--accent);
-  border: 1.5px solid var(--accent);
-}
-
 .tab-content {
   display: none;
   overflow-y: auto;
@@ -225,7 +204,7 @@ h1 {
 .table-wrapper {
   overflow-x: hidden;
   overflow-y: auto;
-  max-height: 80vh;
+  max-height: 75vh;
   width: 100%;
   min-width: 0;
   border-radius: var(--radius);
@@ -233,6 +212,32 @@ h1 {
   padding: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--tab-bg);
+}
+
+  .table-wrapper {
+    max-height: 46vh !important;
+  }
+  .tab-info{
+    font-size: 12px;
+  }
+
+
+@media (min-width: 400px) and (max-width: 500px) {
+  .table-wrapper {
+    max-height: 55vh;
+  }
+  .tab-info{
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 950px) and (min-height: 1080px) {
+  .table-wrapper {
+    max-height: 75vh !important;
+  }
+  .tab-info{
+    font-size: 16px !important;
+  }
 }
 
 .command-table {
@@ -243,6 +248,7 @@ h1 {
   font-size: 1.05em;
   background: none;
   table-layout: fixed;
+  bottom: 30px;
 }
 
 .command-table th,
@@ -344,17 +350,6 @@ body.dark .table-wrapper {
   scrollbar-color: #4a90e2 #1e2430;
 }
 
-body.dark .cheat-toggle {
-  background: #232a36;
-  color: #60a5fa;
-  border: 1.5px solid #60a5fa;
-}
-
-body.dark .cheat-toggle.active {
-  background: #60a5fa;
-  color: #232a36;
-}
-
 .table-wrapper::-webkit-scrollbar {
   width: 12px;
   height: 12px;
@@ -396,4 +391,8 @@ body.dark .table-wrapper::-webkit-scrollbar-thumb:hover {
   margin: 15px 0 5px 0;
   user-select: none;
   font-style: italic;
+}
+
+.footer {
+  flex-shrink: 0; /* footer stays fixed height */
 }
