@@ -181,14 +181,14 @@ function renderAll() {
   favSection.innerHTML = "";
   const favs = getAllFavourites();
 
-  if (favs.length === 0) {
-    favSection.innerHTML = "<div class='table-wrapper'><p style='text-align:center;opacity:0.7;'>No starred commands yet.</p></div>";
-  } else {
-    favSection.appendChild(renderFavouritesTable(favs));
-  }
+favSection.innerHTML = "";
+favSection.appendChild(renderFavouritesTable(favs));
 }
 
 function renderFavouritesTable(favs) {
+  const columns = ["tab", "cmd", "args", "description"];
+  const headers = ["Tab", "Command", "Args", "Description"];
+
   const wrapper = document.createElement("div");
   wrapper.className = "table-wrapper";
 
@@ -197,7 +197,7 @@ function renderFavouritesTable(favs) {
 
   const thead = document.createElement("thead");
   const trHead = document.createElement("tr");
-  ["Tab", "Command", "Args", "Description"].forEach(h => {
+  headers.forEach(h => {
     const th = document.createElement("th");
     th.textContent = h;
     trHead.appendChild(th);
@@ -206,42 +206,55 @@ function renderFavouritesTable(favs) {
   table.appendChild(thead);
 
   const tbody = document.createElement("tbody");
-  favs.forEach(fav => {
+
+  if (favs.length === 0) {
     const tr = document.createElement("tr");
-
-    const tdTab = document.createElement("td");
-    tdTab.textContent = tabLabel(fav.tab);
-    tr.appendChild(tdTab);
-
-    const tdCmd = document.createElement("td");
-    const starBtn = document.createElement("button");
-    starBtn.className = "star-btn fav";
-    starBtn.innerHTML = "★";
-    starBtn.title = "Unstar";
-    starBtn.onclick = e => {
-      e.stopPropagation();
-      toggleFavourite(fav.tab, fav.row);
-      renderAll();
-    };
-    tdCmd.appendChild(starBtn);
-    tdCmd.appendChild(document.createTextNode(" " + (fav.row.cmd || "")));
-    tr.appendChild(tdCmd);
-
-    const argsKey =
-      fav.tab === "iosoccer" ? "default value/ args" :
-      fav.tab === "sourcemod" ? "default value / args" :
-      fav.tab === "hidden" ? "default value" : "";
-
-    const tdArgs = document.createElement("td");
-    tdArgs.textContent = fav.row[argsKey] || "";
-    tr.appendChild(tdArgs);
-
-    const tdDesc = document.createElement("td");
-    tdDesc.textContent = fav.row.description || "";
-    tr.appendChild(tdDesc);
-
+    const td = document.createElement("td");
+    td.colSpan = headers.length;
+    td.style.textAlign = "center";
+    td.style.opacity = "0.7";
+    td.textContent = "No starred commands yet.";
+    tr.appendChild(td);
     tbody.appendChild(tr);
-  });
+  } 
+  else {
+    favs.forEach(fav => {
+      const tr = document.createElement("tr");
+
+      const tdTab = document.createElement("td");
+      tdTab.textContent = tabLabel(fav.tab);
+      tr.appendChild(tdTab);
+
+      const tdCmd = document.createElement("td");
+      const starBtn = document.createElement("button");
+      starBtn.className = "star-btn fav";
+      starBtn.innerHTML = "★";
+      starBtn.title = "Unstar";
+      starBtn.onclick = e => {
+        e.stopPropagation();
+        toggleFavourite(fav.tab, fav.row);
+        renderAll();
+      };
+      tdCmd.appendChild(starBtn);
+      tdCmd.appendChild(document.createTextNode(" " + (fav.row.cmd || "")));
+      tr.appendChild(tdCmd);
+
+      const argsKey =
+        fav.tab === "iosoccer" ? "default value/ args" :
+        fav.tab === "sourcemod" ? "default value / args" :
+        fav.tab === "hidden" ? "default value" : "";
+
+      const tdArgs = document.createElement("td");
+      tdArgs.textContent = fav.row[argsKey] || "";
+      tr.appendChild(tdArgs);
+
+      const tdDesc = document.createElement("td");
+      tdDesc.textContent = fav.row.description || "";
+      tr.appendChild(tdDesc);
+
+      tbody.appendChild(tr);
+    });
+  }
 
   table.appendChild(tbody);
   wrapper.appendChild(table);
