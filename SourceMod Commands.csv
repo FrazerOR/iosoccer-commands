@@ -1,0 +1,118 @@
+cmd,default value / args,description
+sm_play,<#userid|name> <filename>,
+sm_reserve_kicktype,0,How to select a client to kick (if appropriate)
+sm_reserve_maxadmins,1,Maximum amount of admins to let in the server with reserve type 2
+sm_reserve_type,0,Method of reserving slots
+sm_hide_slots,0,"If set to 1, reserved slots will be hidden (subtracted from the max slot count)"
+sm_reserved_slots,0,Number of reserved player slots
+sm_rename,<#userid|name>,
+sm_slay,<#userid|name>,
+sm_slap,<#userid|name> [damage],
+sm_maphistory,,Shows the most recent maps played
+sm_vote_ff,0.6,percent required for successful friendly fire vote.
+sm_vote_alltalk,0.6,percent required for successful alltalk vote.
+sm_vote_slay,0.6,percent required for successful slay vote.
+sm_vote_burn,0.6,percent required for successful burn vote.
+sm_vote_gravity,0.6,percent required for successful gravity vote.
+sm_voteff,,
+sm_votealltalk,,
+sm_voteslay,<player>,
+sm_voteburn,<player>,
+sm_votegravity,<amount> [amount2] ... [amount5],
+sm_drug,<#userid|name> [0/1],
+sm_noclip,<#userid|name>,
+sm_blind,<#userid|name> [amount],Leave amount off to reset.
+sm_gravity,<#userid|name> [amount],Leave amount off to reset. Amount is 0.0 through 5.0
+sm_freezebomb,<#userid|name> [0/1],
+sm_freeze,<#userid|name> [time],
+sm_firebomb,<#userid|name> [0/1],
+sm_burn,<#userid|name> [time],
+sm_timebomb,<#userid|name> [0/1],
+sm_beacon,<#userid|name> [0/1],
+sm_freezebomb_mode,0,"Who is targetted by the freezebomb? 0 = Target only, 1 = Target's team, 2 = Everyone"
+sm_freezebomb_radius,600,Sets the freezebomb blast radius.
+sm_freezebomb_ticks,10,Sets how long the freezebomb fuse is.
+sm_freeze_duration,10,Sets the default duration for sm_freeze and freezebomb victims
+sm_firebomb_mode,0,"Who is targetted by the FireBomb? 0 = Target only, 1 = Target's team, 2 = Everyone"
+sm_firebomb_radius,600,Sets the bomb blast radius.
+sm_firebomb_ticks,10,Sets how long the FireBomb fuse is.
+sm_burn_duration,20,Sets the default duration of sm_burn and firebomb victims.
+sm_timebomb_mode,0,"Who is killed by the timebomb? 0 = Target only, 1 = Target's team, 2 = Everyone"
+sm_timebomb_radius,600,Sets the bomb blast radius.
+sm_timebomb_ticks,10,Sets how long the timebomb fuse is.
+sm_beacon_radius,375,Sets the radius for beacon's light rings.
+sm_settings,,
+sm_cookies,<name> [value],
+sm_voteban_time,30,length of ban in minutes.
+sm_vote_ban,0.6,percent required for successful ban vote.
+sm_vote_kick,0.6,percent required for successful kick vote.
+sm_vote_map,0.6,percent required for successful map vote.
+sm_vote,<question> [Answer1] [Answer2] ... [Answer5],
+sm_voteban,<player> [reason],
+sm_votekick,<player> [reason],
+sm_votemap,<mapname> [mapname2] ... [mapname5],
+sm_timeleft_interval,0,Display timeleft every x seconds. Default 0.
+sm_trigger_show,0,"Display triggers message to all players? (0 off, 1 on, def. 0)"
+sm_revote,,
+sm_cancelvote,,
+sm_reloadadmins,,
+sm_who,[#userid|name],
+sm_execcfg,<filename>,
+sm_resetcvar,<cvar>,
+sm_cvar,<cvar> [value],
+sm_rcon,<args>,
+sm_map,<map>,
+sm_kick,<#userid|name> [reason],
+sm_unsilence,<player>,Restores a player's ability to use voice and chat.
+sm_ungag,<player>,Restores a player's ability to use chat.
+sm_unmute,<player>,Restores a player's ability to use voice.
+sm_silence,<player>,Removes a player's ability to use voice or chat.
+sm_gag,<player>,Removes a player's ability to use chat.
+sm_mute,<player>,Removes a player's ability to use voice.
+sm_deadtalk,0,Controls how dead communicate. 0 - Off. 1 - Dead players ignore teams. 2 - Dead players talk to living teammates.
+sm_msay,<message>,sends message as a menu panel
+sm_psay,<name or #userid> <message>,sends private message
+sm_chat,<message>,sends message to admins
+sm_tsay,[color] <message>,sends top-left message to all players
+sm_hsay,<message>,sends hint message to all players
+sm_csay,<message>,sends centered message to all players
+sm_say,<message>,sends message to all players
+sm_chat_mode,1,Allows player's to send messages to admin chat.
+sm_abortban,,
+sm_banip,<ip|#userid|name> <time> [reason],
+sm_addban,<time> <steamid> [reason],
+sm_unban,<steamid|ip>,
+sm_ban,<#userid|name> <minutes|0> [reason],
+sm_flood_time,0.75,Amount of time allowed between chat messages
+sm_admin,,Displays the admin menu
+sm_searchcmd,,Searches SourceMod commands
+sm_help,,Displays SourceMod commands and descriptions
+sm_print_telist,,Prints the temp entity list
+sm_dump_teprops,,Dumps tempentity props to a file
+sm_dump_netprops_xml,,Dumps the networkable property table as an XML file
+sm_dump_netprops,,Dumps the networkable property table as a text file
+sm_dump_classes,,Dumps the class list as a text file
+sm_dump_datamaps,,Dumps the data map list as a text file
+sm_dump_datamaps_xml,,Dumps the data map list as an XML file
+sm_reload_translations,,Reparses all loaded translation files
+sm_reload_databases,,Reparse database configurations file
+sm_dump_admcache,,Dumps the admin cache for debugging
+sm_dump_handles,,Dumps Handle usage to a file for finding Handle leaks
+sm_show_activity,13,Activity display setting (see sourcemod.cfg)
+sm_immunity_mode,1,Mode for deciding immunity protection
+sm_datetime_format,%m/%d/%Y - %H:%M:%S,Default formatting time rules
+sm_vote_progress_hintbox,0,Show current vote progress in a hint box
+sm_vote_progress_chat,0,Show current vote progress as chat messages
+sm_vote_progress_console,0,Show current vote progress as console messages
+sm_vote_progress_client_console,0,Show current vote progress as console messages to clients
+sm_vote_delay,30,Sets the recommended time in between public votes
+sm_basepath,addons\sourcemod,SourceMod base path (set via command line)
+sm_nextmap,4v4_rooftop,
+sm_maphistory_size,20,
+sm_debug_connect,1,Log Debug information about potential connection issues.
+sm_time_adjustment,0,Adjusts the server time in seconds
+sm_corecfgfile,addons\sourcemod\configs\core.cfg,SourceMod core configuration file
+sm_internal,,
+sm_conhook_start,,
+sm_conhook_stop,,
+sm_menu_sounds,1,Sets whether SourceMod menus play trigger sounds

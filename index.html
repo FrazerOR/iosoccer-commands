@@ -1,31 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>IOSoccer Commands</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    html, body {
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+
+    .main-card {
+      max-width: 1400px;
+      width: 98vw;
+      margin: 2.5em auto;
+      padding-left: 3em;
+      padding-right: 3em;
+    }
+
+    @media (min-width: 1920px) {
+      .main-card {
+        max-width: 1600px;
+      }
+    }
+
+    @media (min-width: 2560px) {
+      .main-card {
+        max-width: 1800px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-  <header>
-    <h1>IOSoccer Commands</h1>
-    <button id="theme-toggle">🌙</button>
-  </header>
-  <nav>
-    <button class="tab-btn" data-tab="iosoccer">IOSoccer Commands</button>
-    <button class="tab-btn" data-tab="hidden">Hidden CVAR's</button>
-    <button class="tab-btn" data-tab="sourcemod">SourceMod Commands</button>
-    <button class="tab-btn" data-tab="favourites">Favourites ⭐</button>
-  </nav>
-  <section id="controls">
-    <input type="text" id="search" placeholder="Search commands...">
-    <label id="cheat-toggle-label" style="display:none;">
-      <input type="checkbox" id="cheat-toggle" checked>
-      Show [CHEATS REQUIRED]
-    </label>
-  </section>
-  <main>
-    <div id="tab-content"></div>
-  </main>
+  <div class="main-card">
+
+    <header>
+      <div class="iosoccer-icon-container">
+        <img src="iosoccer-full-logo-small.png" alt="IOSoccer Logo" class="iosoccer-icon" />
+      </div>
+
+      <button id="darkModeToggle" aria-label="Toggle dark mode" class="toggle-switch">
+        <span class="switch-thumb"></span>
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="iosoccer">IOSoccer</button>
+      <button class="tab" data-tab="hidden">Hidden</button>
+      <button class="tab" data-tab="sourcemod">SourceMod</button>
+      <button class="tab" data-tab="favourites" title="Starred">★ Starred</button>
+    </nav>
+
+    <div class="controls">
+      <input id="searchInput" type="text" placeholder="Search commands..." autocomplete="off" />
+      <button id="cheatToggle" class="cheat-toggle" style="display:none;">SHOW CHEATS</button>
+    </div>
+
+    <div id="tab-info" class="tab-info"></div>
+
+    <main>
+
+      <section id="tab-iosoccer" class="tab-content active">
+        <div class="table-wrapper">
+          <table id="iosoccer-table">
+            <thead>
+              <tr>
+                <th>cmd</th>
+                <th>default value/ args</th>
+                <th>description</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="tab-sourcemod" class="tab-content">
+        <div class="table-wrapper">
+          <table id="sourcemod-table">
+            <thead>
+              <tr>
+                <th>cmd</th>
+                <th>default value / args</th>
+                <th>description</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="tab-hidden" class="tab-content">
+        <div class="table-wrapper">
+          <table id="hiddencvars-table">
+            <thead>
+              <tr>
+                <th>cmd</th>
+                <th>default value</th>
+                <th>description</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="tab-favourites" class="tab-content">
+        <div class="table-wrapper">
+          <p>No favourites yet.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="footer-text">
+      Maintained by Frazer
+    </footer>
+
+  </div>
+
   <script src="script.js"></script>
 </body>
+
 </html>

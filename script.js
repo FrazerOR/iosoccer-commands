@@ -1,220 +1,385 @@
-// === CONFIG ===
-const SHEETS = [
-  {
-    key: 'iosoccer',
-    name: 'IOSoccer Commands',
-    url: 'sheets/IOSoccer Commands.html',
-    cheatToggle: true
+const CSV_FILES = {
+  iosoccer: "IOSoccer Commands.csv",
+  sourcemod: "SourceMod Commands.csv",
+  hidden: "Hidden CVAR's.csv"
+};
+
+const TABLE_CONFIG = {
+  iosoccer: {
+    columns: ["cmd", "default value/ args", "description"],
+    headers: ["Command", "Args", "Description"]
   },
-  {
-    key: 'hidden',
-    name: "Hidden CVAR's",
-    url: "sheets/Hidden CVAR's.html",
-    cheatToggle: false
+  sourcemod: {
+    columns: ["cmd", "default value / args", "description"],
+    headers: ["Command", "Args", "Description"]
   },
-  {
-    key: 'sourcemod',
-    name: 'SourceMod Commands',
-    url: 'sheets/SourceMod Commands.html',
-    cheatToggle: false
+  hidden: {
+    columns: ["cmd", "default value", "description"],
+    headers: ["Command", "Args", "Description"]
   }
-];
+};
 
-const FAV_KEY = 'iosoccer_favourites';
-const THEME_KEY = 'iosoccer_theme';
-
-// === STATE ===
-let sheetData = {}; // { key: [ {command, description, ...}, ... ] }
-let currentTab = 'iosoccer';
-let searchTerm = '';
-let showCheats = true;
+let tablesData = { iosoccer: [], sourcemod: [], hidden: [] };
 let favourites = [];
-let theme = 'light';
+let showCheats = true;
+let currentTab = "iosoccer";
+let searchQuery = "";
 
-// === UTILS ===
-function saveFavourites() {
-  localStorage.setItem(FAV_KEY, JSON.stringify(favourites));
-}
-function loadFavourites() {
-  try {
-    favourites = JSON.parse(localStorage.getItem(FAV_KEY)) || [];
-  } catch {
-    favourites = [];
-  }
-}
-function saveTheme() {
-  localStorage.setItem(THEME_KEY, theme);
-}
-function loadTheme() {
-  theme = localStorage.getItem(THEME_KEY) || 'light';
-  document.body.className = theme;
-  document.getElementById('theme-toggle').textContent = theme === 'dark' ? '☀️' : '🌙';
-}
+const tabInfo = document.getElementById('tab-info');
 
-// === FETCH & PARSE SHEETS ===
-async function fetchAndParseSheets() {
-  for (const sheet of SHEETS) {
-    const res = await fetch(sheet.url);
-    const html = await res.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const table = doc.querySelector('table');
-    if (!table) continue;
-    const rows = Array.from(table.querySelectorAll('tr'));
-    // Assume first row is header
-    const data = [];
-    for (let i = 1; i < rows.length; i++) {
-      const cells = rows[i].querySelectorAll('td');
-      if (cells.length < 2) continue;
-      data.push({
-        command: cells[0].textContent.trim(),
-        description: cells[1].textContent.trim(),
-        raw: rows[i].innerHTML // for future use if needed
-      });
-    }
-    sheetData[sheet.key] = data;
-  }
-}
+const infoTexts = {
+  iosoccer:
+    'A full dump of the IOSoccer Commands and ConVars. Args just shows the default value, use the description for "help" with commands. Find a spreadsheet version <a href="https://docs.google.com/spreadsheets/d/1l8wSx-Njumaaf2cANuWZriGbsqdBqXzK/edit?usp=sharing&ouid=102286865328456157772&rtpof=true&sd=true" target="_blank" rel="noopener noreferrer">here</a>',
+  sourcemod:
+    'All Commands and ConVars included by default with <a href="https://www.sourcemod.net/downloads.php" target="_blank" rel="noopener noreferrer">SourceMod</a>. Official Servers disable some of these.',
+  hidden:
+    `A full dump of the hidden IOSoccer Commands and ConVars. These would normally be disabled but you can use <a href="https://drive.google.com/file/d/1ZnYsAns0tXt0IGGBbW1mVnl7TPSTz_3g/view" target="_blank" rel="noopener noreferrer">this plugin</a> with <a href="https://www.sourcemod.net/downloads.php" target="_blank" rel="noopener noreferrer">SourceMod</a> to enable them.`,
+  favourites: ""
+};
 
-// === RENDERING ===
-function render() {
-  // Tabs
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.tab === currentTab);
-  });
-
-  // Show/hide cheat toggle
-  document.getElementById('cheat-toggle-label').style.display =
-    currentTab === 'iosoccer' ? '' : 'none';
-
-  // Main content
-  let data = [];
-  if (currentTab === 'favourites') {
-    data = [];
-    for (const key of Object.keys(sheetData)) {
-      data = data.concat(
-        sheetData[key].filter(cmd => favourites.includes(favKey(key, cmd.command)))
-          .map(cmd => ({ ...cmd, sheet: key }))
-      );
-    }
+function updateTabInfo(tab) {
+  if (tab === 'favourites') {
+    tabInfo.style.display = 'none';
+    tabInfo.innerHTML = '';
   } else {
-    data = sheetData[currentTab] || [];
-    if (currentTab === 'iosoccer' && !showCheats) {
-      data = data.filter(cmd => !cmd.description.includes('[CHEATS REQUIRED]'));
+    tabInfo.style.display = 'block';
+    tabInfo.innerHTML = infoTexts[tab] || '';
+  }
+}
+
+function setVh() {
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+window.addEventListener('resize', setVh);
+window.addEventListener('load', setVh);
+setVh();
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const headers = lines[0].split(",").map(h => h.trim());
+
+  return lines.slice(1).map(line => {
+    const values = [];
+    let inQuotes = false;
+    let value = "";
+
+    for (const char of line) {
+      if (char === '"' && inQuotes) {
+        inQuotes = false;
+      } else if (char === '"' && !inQuotes) {
+        inQuotes = true;
+      } else if (char === ',' && !inQuotes) {
+        values.push(value);
+        value = "";
+      } else {
+        value += char;
+      }
     }
-  }
+    values.push(value);
 
-  // Search
-  if (searchTerm) {
-    const term = searchTerm.toLowerCase();
-    data = data.filter(cmd =>
-      cmd.command.toLowerCase().includes(term) ||
-      cmd.description.toLowerCase().includes(term)
-    );
-  }
+    const obj = {};
+    headers.forEach((h, idx) => {
+      obj[h] = (values[idx] || "").trim();
+    });
 
-  // Render table
-  const table = document.createElement('table');
-  const thead = document.createElement('thead');
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <th>⭐</th>
-    <th>Command</th>
-    <th>Description</th>
-    ${currentTab === 'favourites' ? '<th>Sheet</th>' : ''}
-  `;
-  thead.appendChild(tr);
+    return obj;
+  });
+}
+
+function saveToLS(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function loadFromLS(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key)) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function renderTable(tab, data) {
+  const { columns, headers } = TABLE_CONFIG[tab];
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "table-wrapper";
+
+  const table = document.createElement("table");
+  table.className = "command-table";
+
+  const thead = document.createElement("thead");
+  const trHead = document.createElement("tr");
+  headers.forEach(h => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    trHead.appendChild(th);
+  });
+  thead.appendChild(trHead);
   table.appendChild(thead);
 
-  const tbody = document.createElement('tbody');
-  for (const cmd of data) {
-    const key = currentTab === 'favourites' ? cmd.sheet : currentTab;
-    const fav = favourites.includes(favKey(key, cmd.command));
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td class="star-cell" style="text-align:center;cursor:pointer;" data-cmd="${cmd.command}" data-sheet="${key}">
-        <span class="star" title="Toggle favourite">${fav ? '⭐' : '☆'}</span>
-      </td>
-      <td>${escapeHTML(cmd.command)}</td>
-      <td>${escapeHTML(cmd.description)}</td>
-      ${currentTab === 'favourites' ? `<td>${sheetName(key)}</td>` : ''}
-    `;
-    tbody.appendChild(row);
-  }
-  table.appendChild(tbody);
+  const tbody = document.createElement("tbody");
+  data.forEach(row => {
+    const tr = document.createElement("tr");
 
-  const content = document.getElementById('tab-content');
-  content.innerHTML = '';
-  content.appendChild(table);
+    columns.forEach((col, idx) => {
+      const td = document.createElement("td");
 
-  // Add star click listeners
-  document.querySelectorAll('.star-cell').forEach(cell => {
-    cell.onclick = function () {
-      const cmd = this.dataset.cmd;
-      const sheet = this.dataset.sheet;
-      const key = favKey(sheet, cmd);
-      if (favourites.includes(key)) {
-        favourites = favourites.filter(f => f !== key);
+      if (idx === 0) {
+        const starBtn = document.createElement("button");
+        starBtn.className = "star-btn" + (isFavourited(tab, row) ? " fav" : "");
+        starBtn.innerHTML = isFavourited(tab, row) ? "★" : "☆";
+        starBtn.title = isFavourited(tab, row) ? "Unstar" : "Star";
+        starBtn.onclick = e => {
+          e.stopPropagation();
+          toggleFavourite(tab, row);
+          renderAll();
+        };
+
+        td.appendChild(starBtn);
+        td.appendChild(document.createTextNode(" " + (row[col] || "")));
       } else {
-        favourites.push(key);
+        td.textContent = row[col] || "";
       }
-      saveFavourites();
-      render();
+
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  wrapper.appendChild(table);
+
+  return wrapper;
+}
+
+function renderAll() {
+  const iosoccerSection = document.getElementById("tab-iosoccer");
+  let iosoccerData = tablesData.iosoccer;
+
+  if (!showCheats) {
+    iosoccerData = iosoccerData.filter(row => !/\[CHEATS REQUIRED\]/i.test(row.description));
+  }
+
+  iosoccerData = filterData(iosoccerData, searchQuery);
+  iosoccerSection.innerHTML = "";
+  iosoccerSection.appendChild(renderTable("iosoccer", iosoccerData));
+
+  const sourcemodSection = document.getElementById("tab-sourcemod");
+  const sourcemodData = filterData(tablesData.sourcemod, searchQuery);
+  sourcemodSection.innerHTML = "";
+  sourcemodSection.appendChild(renderTable("sourcemod", sourcemodData));
+
+  const hiddenSection = document.getElementById("tab-hidden");
+  const hiddenData = filterData(tablesData.hidden, searchQuery);
+  hiddenSection.innerHTML = "";
+  hiddenSection.appendChild(renderTable("hidden", hiddenData));
+
+  const favSection = document.getElementById("tab-favourites");
+  favSection.innerHTML = "";
+  const favs = getAllFavourites();
+
+  if (favs.length === 0) {
+    favSection.innerHTML = "<div class='table-wrapper'><p style='text-align:center;opacity:0.7;'>No starred commands yet.</p></div>";
+  } else {
+    favSection.appendChild(renderFavouritesTable(favs));
+  }
+}
+
+function renderFavouritesTable(favs) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "table-wrapper";
+
+  const table = document.createElement("table");
+  table.className = "command-table";
+
+  const thead = document.createElement("thead");
+  const trHead = document.createElement("tr");
+  ["Tab", "Command", "Args", "Description"].forEach(h => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    trHead.appendChild(th);
+  });
+  thead.appendChild(trHead);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  favs.forEach(fav => {
+    const tr = document.createElement("tr");
+
+    const tdTab = document.createElement("td");
+    tdTab.textContent = tabLabel(fav.tab);
+    tr.appendChild(tdTab);
+
+    const tdCmd = document.createElement("td");
+    const starBtn = document.createElement("button");
+    starBtn.className = "star-btn fav";
+    starBtn.innerHTML = "★";
+    starBtn.title = "Unstar";
+    starBtn.onclick = e => {
+      e.stopPropagation();
+      toggleFavourite(fav.tab, fav.row);
+      renderAll();
     };
+    tdCmd.appendChild(starBtn);
+    tdCmd.appendChild(document.createTextNode(" " + (fav.row.cmd || "")));
+    tr.appendChild(tdCmd);
+
+    const argsKey =
+      fav.tab === "iosoccer" ? "default value/ args" :
+      fav.tab === "sourcemod" ? "default value / args" :
+      fav.tab === "hidden" ? "default value" : "";
+
+    const tdArgs = document.createElement("td");
+    tdArgs.textContent = fav.row[argsKey] || "";
+    tr.appendChild(tdArgs);
+
+    const tdDesc = document.createElement("td");
+    tdDesc.textContent = fav.row.description || "";
+    tr.appendChild(tdDesc);
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  wrapper.appendChild(table);
+
+  return wrapper;
+}
+
+function getAllFavourites() {
+  return favourites.map(fav => ({
+    tab: fav.tab,
+    row: fav.row
+  }));
+}
+
+function isFavourited(tab, row) {
+  return favourites.some(fav =>
+    fav.tab === tab &&
+    fav.row.cmd === row.cmd &&
+    fav.row.description === row.description
+  );
+}
+
+function toggleFavourite(tab, row) {
+  const idx = favourites.findIndex(fav =>
+    fav.tab === tab &&
+    fav.row.cmd === row.cmd &&
+    fav.row.description === row.description
+  );
+
+  if (idx >= 0) {
+    favourites.splice(idx, 1);
+  } else {
+    favourites.push({ tab, row });
+  }
+
+  saveToLS("favourites", favourites);
+}
+
+function filterData(data, query) {
+  if (!query) return data;
+
+  const q = query.toLowerCase();
+
+  return data.filter(row =>
+    (row.cmd && row.cmd.toLowerCase().includes(q)) ||
+    (row.description && row.description.toLowerCase().includes(q)) ||
+    (row["default value/ args"] && row["default value/ args"].toLowerCase().includes(q)) ||
+    (row["default value / args"] && row["default value / args"].toLowerCase().includes(q)) ||
+    (row["default value"] && row["default value"].toLowerCase().includes(q))
+  );
+}
+
+function tabLabel(tab) {
+  switch (tab) {
+    case "iosoccer": return "IOSoccer";
+    case "sourcemod": return "SourceMod";
+    case "hidden": return "Hidden CVARs";
+    default: return tab;
+  }
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+
+  document.querySelectorAll(".tab").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.tab === tab);
+  });
+
+  document.querySelectorAll(".tab-content").forEach(sec => {
+    sec.classList.toggle("active", sec.id === "tab-" + tab);
+  });
+
+  document.getElementById("cheatToggle").style.display = (tab === "iosoccer") ? "" : "none";
+  document.getElementById("searchInput").style.display = (tab === "favourites") ? "none" : "";
+
+  renderAll();
+  updateTabInfo(tab);
+}
+
+function updateCheatToggle() {
+  const btn = document.getElementById("cheatToggle");
+  btn.textContent = showCheats ? "HIDE CHEATS" : "SHOW CHEATS";
+  btn.classList.toggle("active", showCheats);
+}
+
+function setDarkMode(enabled) {
+  document.body.classList.toggle("dark", enabled);
+  saveToLS("darkMode", enabled);
+}
+
+async function loadCSVs() {
+  for (const tab in CSV_FILES) {
+    const file = CSV_FILES[tab];
+    try {
+      const resp = await fetch(file);
+      if (!resp.ok) throw new Error("Failed to load " + file);
+      const text = await resp.text();
+      tablesData[tab] = parseCSV(text);
+    } catch (e) {
+      tablesData[tab] = [];
+      console.error("Error loading", file, e);
+    }
+  }
+}
+
+function setupEventListeners() {
+  document.querySelectorAll(".tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      switchTab(btn.dataset.tab);
+    });
+  });
+
+  document.getElementById("searchInput").addEventListener("input", e => {
+    searchQuery = e.target.value;
+    renderAll();
+  });
+
+  document.getElementById("cheatToggle").addEventListener("click", () => {
+    showCheats = !showCheats;
+    saveToLS("showCheats", showCheats);
+    updateCheatToggle();
+    renderAll();
+  });
+
+  document.getElementById("darkModeToggle").addEventListener("click", () => {
+    const enabled = !document.body.classList.contains("dark");
+    setDarkMode(enabled);
   });
 }
 
-function favKey(sheet, cmd) {
-  return `${sheet}::${cmd}`;
-}
-function sheetName(key) {
-  const sheet = SHEETS.find(s => s.key === key);
-  return sheet ? sheet.name : key;
-}
-function escapeHTML(str) {
-  return str.replace(/[&<>"']/g, s => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[s]));
-}
-
-// === EVENT HANDLERS ===
-function setupEventHandlers() {
-  // Tabs
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.onclick = () => {
-      currentTab = btn.dataset.tab;
-      render();
-    };
-  });
-
-  // Search
-  document.getElementById('search').oninput = function () {
-    searchTerm = this.value;
-    render();
-  };
-
-  // Cheat toggle
-  document.getElementById('cheat-toggle').onchange = function () {
-    showCheats = this.checked;
-    render();
-  };
-
-  // Theme toggle
-  document.getElementById('theme-toggle').onclick = function () {
-    theme = theme === 'light' ? 'dark' : 'light';
-    document.body.className = theme;
-    this.textContent = theme === 'dark' ? '☀️' : '🌙';
-    saveTheme();
-  };
-}
-
-// === INIT ===
 async function init() {
-  loadFavourites();
-  loadTheme();
-  setupEventHandlers();
-  await fetchAndParseSheets();
-  render();
+  favourites = loadFromLS("favourites", []);
+  showCheats = loadFromLS("showCheats", true);
+  setDarkMode(loadFromLS("darkMode", window.matchMedia('(prefers-color-scheme: dark)').matches));
+  updateCheatToggle();
+  await loadCSVs();
+  setupEventListeners();
+  switchTab(currentTab);
 }
 
-init();
+window.addEventListener("DOMContentLoaded", init);
