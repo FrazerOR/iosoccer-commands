@@ -293,7 +293,9 @@ h1 {
 .command-table th:nth-child(1),
 .command-table td:nth-child(1) {
   min-width: 250px;
-  white-space: nowrap;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
   overflow: visible;
   text-overflow: clip;
 }
