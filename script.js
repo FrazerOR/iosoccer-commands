@@ -1,7 +1,7 @@
 const CSV_FILES = {
-  iosoccer: "IOSoccer Commands.csv",
-  sourcemod: "SourceMod Commands.csv",
-  hidden: "Hidden CVAR's.csv"
+  iosoccer: "resources/IOSoccer.csv",
+  sourcemod: "resources/SourceMod.csv",
+  hidden: "resources/IOSoccerHidden.csv"
 };
 
 const TABLE_CONFIG = {
@@ -36,24 +36,20 @@ const infoTexts = {
   favourites: ""
 };
 
-function updateTabInfo(tab) {
-  if (tab === 'favourites') {
-    tabInfo.style.display = 'none';
-    tabInfo.innerHTML = '';
-  } else {
-    tabInfo.style.display = 'block';
-    tabInfo.innerHTML = infoTexts[tab] || '';
+async function loadCSVs() {
+  for (const tab in CSV_FILES) {
+    const file = CSV_FILES[tab];
+    try {
+      const resp = await fetch(file);
+      if (!resp.ok) throw new Error("Failed to load " + file);
+      const text = await resp.text();
+      tablesData[tab] = parseCSV(text);
+    } catch (e) {
+      tablesData[tab] = [];
+      console.error("Error loading", file, e);
+    }
   }
 }
-
-function setVh() {
-  const vh = window.innerHeight * 0.01;
-  document.documentElement.style.setProperty('--vh', `${vh}px`);
-}
-
-window.addEventListener('resize', setVh);
-window.addEventListener('load', setVh);
-setVh();
 
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
@@ -288,6 +284,16 @@ function toggleFavourite(tab, row) {
   saveToLS("favourites", favourites);
 }
 
+function updateTabInfo(tab) {
+  if (tab === 'favourites') {
+    tabInfo.style.display = 'none';
+    tabInfo.innerHTML = '';
+  } else {
+    tabInfo.style.display = 'block';
+    tabInfo.innerHTML = infoTexts[tab] || '';
+  }
+}
+
 function filterData(data, query) {
   if (!query) return data;
 
@@ -331,21 +337,6 @@ function switchTab(tab) {
 function setDarkMode(enabled) {
   document.body.classList.toggle("dark", enabled);
   saveToLS("darkMode", enabled);
-}
-
-async function loadCSVs() {
-  for (const tab in CSV_FILES) {
-    const file = CSV_FILES[tab];
-    try {
-      const resp = await fetch(file);
-      if (!resp.ok) throw new Error("Failed to load " + file);
-      const text = await resp.text();
-      tablesData[tab] = parseCSV(text);
-    } catch (e) {
-      tablesData[tab] = [];
-      console.error("Error loading", file, e);
-    }
-  }
 }
 
 function setupEventListeners() {
