@@ -160,7 +160,7 @@ function renderAll() {
   let iosoccerData = tablesData.iosoccer;
 
   if (!showCheats) {
-    iosoccerData = iosoccerData.filter(row => !/\[CHEATS REQUIRED\]/i.test(row.description));
+    iosoccerData = iosoccerData.filter(row => !/\[CHEATS REQUIRED\]|sv_cheats/i.test(row.description));
   }
 
   iosoccerData = filterData(iosoccerData, searchQuery);
